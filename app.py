@@ -1,4 +1,4 @@
-#!flask/bin/python
+#!/home1/irteam/user/dwshin/packages/anaconda3/bin/python
 
 # Author: Ngo Duy Khanh
 # Email: ngokhanhit@gmail.com
@@ -13,7 +13,8 @@ import traceback
 
 from flask import Flask, request, render_template, redirect, url_for, send_from_directory
 from flask_bootstrap import Bootstrap
-from werkzeug import secure_filename
+#from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 
 from lib.upload_file import uploadfile
 
@@ -22,7 +23,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hard to guess string'
 app.config['UPLOAD_FOLDER'] = 'data/'
 app.config['THUMBNAIL_FOLDER'] = 'data/thumbnail/'
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 1000 * 1024 * 1024 * 300
 
 ALLOWED_EXTENSIONS = set(['txt', 'gif', 'png', 'jpg', 'jpeg', 'bmp', 'rar', 'zip', '7zip', 'doc', 'docx'])
 IGNORED_FILES = set(['.gitignore'])
@@ -61,7 +62,7 @@ def create_thumbnail(image):
         return True
 
     except:
-        print traceback.format_exc()
+        print(traceback.format_exc())
         return False
 
 
@@ -75,23 +76,23 @@ def upload():
             filename = gen_file_name(filename)
             mime_type = files.content_type
 
-            if not allowed_file(files.filename):
-                result = uploadfile(name=filename, type=mime_type, size=0, not_allowed_msg="File type not allowed")
+            #if not allowed_file(files.filename):
+                #result = uploadfile(name=filename, type=mime_type, size=0, not_allowed_msg="File type not allowed")
 
-            else:
-                # save file to disk
-                uploaded_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                files.save(uploaded_file_path)
+            #else:
+            # save file to disk
+            uploaded_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            files.save(uploaded_file_path)
 
-                # create thumbnail after saving
-                if mime_type.startswith('image'):
-                    create_thumbnail(filename)
-                
-                # get file size after saving
-                size = os.path.getsize(uploaded_file_path)
+            # create thumbnail after saving
+            if mime_type.startswith('image'):
+                create_thumbnail(filename)
 
-                # return json for js call back
-                result = uploadfile(name=filename, type=mime_type, size=size)
+            # get file size after saving
+            size = os.path.getsize(uploaded_file_path)
+
+            # return json for js call back
+            result = uploadfile(name=filename, type=mime_type, size=size)
             
             return simplejson.dumps({"files": [result.get_file()]})
 
@@ -145,4 +146,4 @@ def index():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=10002, debug=True)
